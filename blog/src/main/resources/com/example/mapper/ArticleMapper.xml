@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+namespace:名称空间
+-->
+<mapper namespace="com.example.mapper.ArticleMapper">
+    <select id="selectArticle" resultType="com.example.pojo.Article">
+        select * from article
+    </select>
+<select id="select" >
+    select title from article where id=#{id}
+</select>
+    <insert id="insert" >
+        insert into article (title) values(#{title})
+    </insert>
+
+    <delete id="delete">
+        delete from article where title = #{title}
+    </delete>
+
+    <update id="update">
+        update article set title = #{title} where id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--    开启注解扫描，只希望spring处理service层和dao层，不处理controller层-->
+    <context:component-scan base-package="com.example">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    <context:annotation-config/>
+    <!--    配置dao所在包-->
+    <bean id="mapperScanner" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.example.dao">
+        </property>
+    </bean>
+
+
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <!--    spring整合mybatis-->
+    <!--    配置连接池-->
+    <bean id="datasource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+
+    </bean>
+
+    <!--        配置SqlSession工厂-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="datasource">
+        </property>
+    </bean>
+
+    <!--    &lt;!&ndash;    配置spring框架声明式事务管理&ndash;&gt;
+        &lt;!&ndash;配置事务管理器&ndash;&gt;
+        <bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+            <property name="dataSource" ref="datasource">
+            </property>
+        </bean>
+
+        &lt;!&ndash;    配置事务通知&ndash;&gt;
+        <tx:advice id="txAdvice" transaction-manager="dataSourceTransactionManager">
+        </tx:advice>
+
+        &lt;!&ndash;    配置aop增强 &ndash;&gt;
+        <aop:config>
+            <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.example.service.Impl.*ServiceImpl.*(..))"/>
+        </aop:config>-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.example.mapper"/>
+    </bean>
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="myRealm"/>
+    </bean>
+
+    <bean id="myRealm" class="com.example.utils.MyRealm">
+        <property name="dataSource" ref="datasource"/>
+        <property name="adminMapper" ref="adminMapper"/>
+    </bean>
+
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="loginUrl" value="/login"/>
+        <property name="filterChainDefinitions">
+            <value>
+                /login = anon
+                /logout = logout
+            </value>
+        </property>
+    </bean>
+</beans>
